@@ -66,6 +66,82 @@ function DrawerLayout() {
         }}
       />
       <Drawer.Screen
+        name="projects"
+        options={{
+          headerTitle: "Projects",
+          drawerLabel: ({ color, focused }) => (
+            <Text style={{ color: focused ? color : themeColorForeground }}>Projects</Text>
+          ),
+          drawerIcon: ({ size, color, focused }) => (
+            <Ionicons
+              name="folder-open-outline"
+              size={size}
+              color={focused ? color : themeColorForeground}
+            />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="agents"
+        options={{
+          headerTitle: "Agents",
+          drawerLabel: ({ color, focused }) => (
+            <Text style={{ color: focused ? color : themeColorForeground }}>Agents</Text>
+          ),
+          drawerIcon: ({ size, color, focused }) => (
+            <Ionicons name="hardware-chip-outline" size={size} color={focused ? color : themeColorForeground} />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="conversations"
+        options={{
+          headerTitle: "Conversations",
+          drawerLabel: ({ color, focused }) => (
+            <Text style={{ color: focused ? color : themeColorForeground }}>Conversations</Text>
+          ),
+          drawerIcon: ({ size, color, focused }) => (
+            <Ionicons
+              name="chatbubbles-outline"
+              size={size}
+              color={focused ? color : themeColorForeground}
+            />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="checkpoints"
+        options={{
+          headerTitle: "Checkpoints",
+          drawerLabel: ({ color, focused }) => (
+            <Text style={{ color: focused ? color : themeColorForeground }}>Checkpoints</Text>
+          ),
+          drawerIcon: ({ size, color, focused }) => (
+            <Ionicons
+              name="git-branch-outline"
+              size={size}
+              color={focused ? color : themeColorForeground}
+            />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="mcp"
+        options={{
+          headerTitle: "MCP",
+          drawerLabel: ({ color, focused }) => (
+            <Text style={{ color: focused ? color : themeColorForeground }}>MCP</Text>
+          ),
+          drawerIcon: ({ size, color, focused }) => (
+            <Ionicons
+              name="server-outline"
+              size={size}
+              color={focused ? color : themeColorForeground}
+            />
+          ),
+        }}
+      />
+      <Drawer.Screen
         name="todos"
         options={{
           headerTitle: "Todos",

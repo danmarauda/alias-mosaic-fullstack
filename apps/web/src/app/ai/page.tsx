@@ -1,8 +1,9 @@
 "use client";
 
 import { api } from "@alias-mosaic-fullstack/backend/convex/_generated/api";
+import type { Id } from "@alias-mosaic-fullstack/backend/convex/_generated/dataModel";
 import { useUIMessages, useSmoothText, type UIMessage } from "@convex-dev/agent/react";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { Send, Loader2 } from "lucide-react";
 import dynamic from "next/dynamic";
 
@@ -31,10 +32,30 @@ function MessageContent({ text, isStreaming }: { text: string; isStreaming: bool
 
 export default function AIPage() {
   const [input, setInput] = useState("");
-  const [threadId, setThreadId] = useState<string | null>(null);
+  const [selectedProjectId, setSelectedProjectId] = useState<Id<"projects"> | null>(null);
+  const [selectedConversationId, setSelectedConversationId] = useState<Id<"conversations"> | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const projects = useQuery(api.projects.list);
+  const activeProjectId = selectedProjectId ?? (projects?.[0]?._id ?? null);
+  const conversations = useQuery(
+    api.conversations.listByProject,
+    activeProjectId ? { projectId: activeProjectId } : "skip",
+  );
+  const activeConversationId = selectedConversationId ?? (conversations?.[0]?._id ?? null);
+  const activeConversation = useQuery(
+    api.conversations.getById,
+    activeConversationId ? { conversationId: activeConversationId } : "skip",
+  );
+
+  const threadId =
+    activeConversation?.aiTabs.find((tab) => tab.id === activeConversation.activeAITabId)?.agentSessionId ??
+    null;
+
+  const createProject = useMutation(api.projects.create);
+  const createConversation = useMutation(api.conversations.create);
+  const upsertThreadTab = useMutation(api.conversations.upsertThreadTab);
   const createThread = useMutation(api.chat.createNewThread);
   const sendMessage = useMutation(api.chat.sendMessage);
 
@@ -59,10 +80,45 @@ export default function AIPage() {
     setInput("");
 
     try {
+      let projectId = activeProjectId;
+      if (!projectId) {
+        const project = await createProject({
+          name: "Default Project",
+          path: ".",
+        });
+        projectId = project?._id ?? null;
+      }
+
+      if (!projectId) {
+        throw new Error("Failed to create a project");
+      }
+
+      let conversationId = activeConversationId;
+      if (!conversationId) {
+        const conversation = await createConversation({
+          projectId,
+          name: "Main Conversation",
+          firstMessage: text,
+        });
+        conversationId = conversation?._id ?? null;
+        if (conversationId) {
+          setSelectedConversationId(conversationId);
+        }
+      }
+
+      if (!conversationId) {
+        throw new Error("Failed to create conversation");
+      }
+
       let currentThreadId = threadId;
       if (!currentThreadId) {
         currentThreadId = await createThread();
-        setThreadId(currentThreadId);
+        await upsertThreadTab({
+          conversationId,
+          tabId: "tab-main",
+          tabName: "Main",
+          threadId: currentThreadId,
+        });
       }
 
       await sendMessage({ threadId: currentThreadId, prompt: text });
@@ -75,6 +131,39 @@ export default function AIPage() {
 
   return (
     <div className="grid grid-rows-[1fr_auto] overflow-hidden w-full mx-auto p-4">
+      <div className="flex gap-2 mb-3 flex-wrap">
+        {projects?.map((project) => {
+          const isActive = activeProjectId === project._id;
+          return (
+            <Button
+              key={project._id}
+              size="sm"
+              variant={isActive ? "default" : "outline"}
+              onClick={() => {
+                setSelectedProjectId(project._id);
+                setSelectedConversationId(null);
+              }}
+            >
+              {project.name}
+            </Button>
+          );
+        })}
+      </div>
+      <div className="flex gap-2 mb-3 flex-wrap">
+        {conversations?.map((conversation) => {
+          const isActive = activeConversationId === conversation._id;
+          return (
+            <Button
+              key={conversation._id}
+              size="sm"
+              variant={isActive ? "default" : "outline"}
+              onClick={() => setSelectedConversationId(conversation._id)}
+            >
+              {conversation.name ?? "Untitled"}
+            </Button>
+          );
+        })}
+      </div>
       <div className="overflow-y-auto space-y-4 pb-4">
         {!messages || messages.length === 0 ? (
           <div className="text-center text-muted-foreground mt-8">
