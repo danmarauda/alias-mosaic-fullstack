@@ -1,0 +1,6 @@
+{
+  "extends": "@alias-mosaic-fullstack/config/tsconfig.base.json",
+  "compilerOptions": {
+    "strictNullChecks": true
+  }
+}

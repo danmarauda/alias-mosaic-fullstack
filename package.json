@@ -1,0 +1,60 @@
+{
+  "name": "alias-mosaic-fullstack",
+  "private": true,
+  "workspaces": {
+    "packages": [
+      "apps/*",
+      "packages/*"
+    ],
+    "catalog": {
+      "dotenv": "^17.2.2",
+      "zod": "^4.1.13",
+      "typescript": "^5",
+      "@cloudflare/workers-types": "^4.20251213.0",
+      "convex": "^1.31.2",
+      "better-auth": "1.4.9",
+      "@convex-dev/better-auth": "^0.10.9",
+      "@convex-dev/agent": "^0.3.2",
+      "alchemy": "^0.82.1",
+      "@better-auth/expo": "1.4.9"
+    }
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "check-types": "turbo check-types",
+    "dev:native": "turbo -F native dev",
+    "dev:web": "turbo -F web dev",
+    "dev:server": "turbo -F @alias-mosaic-fullstack/backend dev",
+    "dev:setup": "turbo -F @alias-mosaic-fullstack/backend dev:setup",
+    "deploy": "turbo -F @alias-mosaic-fullstack/infra deploy",
+    "destroy": "turbo -F @alias-mosaic-fullstack/infra destroy",
+    "check": "ultracite check",
+    "fix": "ultracite fix",
+    "prepare": "husky",
+    "ruler:apply": "bunx @intellectronica/ruler@latest apply --local-only"
+  },
+  "dependencies": {
+    "@alias-mosaic-fullstack/env": "workspace:*",
+    "dotenv": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@alias-mosaic-fullstack/config": "workspace:*",
+    "@biomejs/biome": "2.3.13",
+    "@cloudflare/workers-types": "catalog:",
+    "husky": "latest",
+    "lefthook": "latest",
+    "lint-staged": "latest",
+    "turbo": "^2.6.3",
+    "typescript": "catalog:",
+    "ultracite": "7.1.4"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,json,jsonc,css,scss,md,mdx}": [
+      "bun x ultracite fix"
+    ]
+  },
+  "packageManager": "bun@1.3.8"
+}
