@@ -4,6 +4,9 @@ import { Uniwind, useUniwind } from "uniwind";
 
 type ThemeName = "light" | "dark";
 
+// Dark mode is the default theme
+const DEFAULT_THEME: ThemeName = "dark";
+
 type AppThemeContextType = {
 	currentTheme: string;
 	isLight: boolean;
