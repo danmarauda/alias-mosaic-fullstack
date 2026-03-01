@@ -80,6 +80,20 @@
 	--sidebar-accent-foreground: oklch(0.205 0 0);
 	--sidebar-border: oklch(0.922 0 0);
 	--sidebar-ring: oklch(0.708 0 0);
+
+	/* Theme color mappings */
+	--theme-bg-main: var(--background);
+	--theme-bg-sidebar: oklch(0.985 0 0);
+	--theme-text-main: var(--foreground);
+	--theme-accent: var(--primary);
+	--theme-accent-foreground: var(--primary-foreground);
+	--theme-muted: var(--muted);
+	--theme-muted-foreground: var(--muted-foreground);
+	--theme-border: var(--border);
+	--theme-ring: var(--ring);
+	--theme-highlight-color: oklch(0.646 0.222 41.116);
+	--theme-pulse-color: oklch(0.646 0.222 41.116 / 0.4);
+	--theme-token-highlight: oklch(0.646 0.222 41.116);
 }
 
 .dark {
@@ -114,6 +128,12 @@
 	--sidebar-accent-foreground: oklch(0.985 0 0);
 	--sidebar-border: oklch(1 0 0 / 10%);
 	--sidebar-ring: oklch(0.556 0 0);
+
+	/* Dark theme color mappings */
+	--theme-bg-sidebar: oklch(0.205 0 0);
+	--theme-highlight-color: oklch(0.488 0.243 264.376);
+	--theme-pulse-color: oklch(0.488 0.243 264.376 / 0.4);
+	--theme-token-highlight: oklch(0.488 0.243 264.376);
 }
 
 @layer base {
@@ -139,5 +159,330 @@
 		width: 100%;
 		margin: 0;
 		padding: 0;
+	}
+}
+
+/* Placeholder text styling - ensure clear distinction from actual input values */
+input::placeholder,
+textarea::placeholder {
+	opacity: 0.5;
+	font-style: italic;
+}
+
+/* ==========================================
+   Custom Scrollbar Styles
+   ========================================== */
+
+/* Custom scrollbar styles - subtle by default, brighter on hover */
+.scrollbar-thin::-webkit-scrollbar {
+	width: 6px;
+	height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+	background: oklch(0 0 0 / 0.15);
+	border-radius: 3px;
+	transition: background-color 0.2s ease;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+	background: oklch(0 0 0 / 0.3);
+}
+
+.dark .scrollbar-thin::-webkit-scrollbar-thumb {
+	background: oklch(1 0 0 / 0.15);
+}
+
+.dark .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+	background: oklch(1 0 0 / 0.3);
+}
+
+/* Scrollbar with highlight color when actively scrolling */
+.scrollbar-thin.scrolling::-webkit-scrollbar-thumb {
+	background: var(--theme-highlight-color);
+	transition: background-color 0.15s ease;
+}
+
+.scrollbar-thin.scrolling::-webkit-scrollbar-thumb:hover {
+	background: var(--theme-highlight-color);
+}
+
+/* Scrollbar fading out state - gradual transition to transparent */
+.scrollbar-thin.fading::-webkit-scrollbar-thumb {
+	background: transparent;
+	transition: background-color 0.5s ease;
+}
+
+/* Hide scrollbar completely */
+.no-scrollbar::-webkit-scrollbar {
+	display: none;
+}
+
+.no-scrollbar {
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+}
+
+/* ==========================================
+   Animation Keyframes
+   ========================================== */
+
+@keyframes fade-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes slide-up {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes slide-down {
+	from {
+		opacity: 0;
+		transform: translateY(-10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes scale-in {
+	from {
+		opacity: 0;
+		transform: scale(0.95);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+@keyframes highlight-pulse {
+	0% {
+		box-shadow: 0 0 0 0 var(--theme-pulse-color);
+	}
+	70% {
+		box-shadow: 0 0 0 6px oklch(0 0 0 / 0);
+	}
+	100% {
+		box-shadow: 0 0 0 0 oklch(0 0 0 / 0);
+	}
+}
+
+@keyframes check-pop {
+	0% {
+		transform: scale(0);
+		opacity: 0;
+	}
+	50% {
+		transform: scale(1.2);
+	}
+	100% {
+		transform: scale(1);
+		opacity: 1;
+	}
+}
+
+@keyframes token-update {
+	0% {
+		color: var(--theme-token-highlight);
+		transform: scale(1.1);
+	}
+	100% {
+		color: inherit;
+		transform: scale(1);
+	}
+}
+
+@keyframes progress-stripe {
+	0% {
+		background-position: 0 0;
+	}
+	100% {
+		background-position: 40px 0;
+	}
+}
+
+/* Shimmer effect for loading states and drag-and-drop */
+@keyframes shimmer {
+	0% {
+		transform: translateX(-100%);
+	}
+	100% {
+		transform: translateX(100%);
+	}
+}
+
+/* ==========================================
+   Animation Utility Classes
+   ========================================== */
+
+.animate-in {
+	animation: fade-in 0.2s ease-in;
+}
+
+.animate-slide-up {
+	animation: slide-up 0.25s ease-out;
+}
+
+.animate-slide-down {
+	animation: slide-down 0.2s ease-out;
+}
+
+.animate-scale-in {
+	animation: scale-in 0.2s ease-out;
+}
+
+.animate-highlight-pulse {
+	animation: highlight-pulse 0.6s ease-out;
+}
+
+.animate-check-pop {
+	animation: check-pop 0.3s ease-out;
+}
+
+.animate-token-update {
+	animation: token-update 0.4s ease-out;
+}
+
+/* Animated progress bar with stripes for indeterminate state */
+.progress-bar-animated {
+	background-image: linear-gradient(
+		45deg,
+		oklch(1 0 0 / 0.15) 25%,
+		transparent 25%,
+		transparent 50%,
+		oklch(1 0 0 / 0.15) 50%,
+		oklch(1 0 0 / 0.15) 75%,
+		transparent 75%,
+		transparent
+	);
+	background-size: 40px 40px;
+	animation: progress-stripe 1s linear infinite;
+}
+
+/* ==========================================
+   Modal Overlay
+   ========================================== */
+
+/* Modal overlay - solid background without GPU-intensive blur */
+/* Replaces backdrop-blur-sm for better performance */
+.modal-overlay {
+	background-color: oklch(0 0 0 / 0.85);
+}
+
+/* ==========================================
+   Prose List Styling
+   ========================================== */
+
+/* Restore list styling for markdown preview prose containers */
+.prose ul {
+	list-style-type: disc !important;
+	list-style-position: outside !important;
+}
+
+.prose ol {
+	list-style-type: decimal !important;
+	list-style-position: outside !important;
+}
+
+.prose li {
+	display: list-item !important;
+}
+
+.prose li > p {
+	display: inline !important;
+	margin: 0 !important;
+	vertical-align: baseline;
+	line-height: inherit;
+}
+
+.prose li > p + ul,
+.prose li > p + ol {
+	margin-top: 0 !important;
+}
+
+/* Fix bullet alignment when first element is bold/styled */
+.prose li > strong:first-child,
+.prose li > b:first-child,
+.prose li > em:first-child,
+.prose li > code:first-child,
+.prose li > a:first-child,
+.prose li > p > strong:first-child,
+.prose li > p > b:first-child,
+.prose li > p > em:first-child,
+.prose li > p > code:first-child,
+.prose li > p > a:first-child {
+	vertical-align: baseline;
+	line-height: inherit;
+}
+
+.prose li::marker {
+	font-weight: normal;
+}
+
+/* Nested lists */
+.prose ul ul {
+	list-style-type: circle !important;
+}
+
+.prose ul ul ul {
+	list-style-type: square !important;
+}
+
+.prose ol ol {
+	list-style-type: lower-alpha !important;
+}
+
+.prose ol ol ol {
+	list-style-type: lower-roman !important;
+}
+
+/* ==========================================
+   Reduced Motion Support
+   ========================================== */
+
+@media (prefers-reduced-motion: reduce) {
+	.animate-pulse,
+	.animate-spin,
+	.animate-bounce {
+		animation: none !important;
+	}
+
+	.animate-in,
+	.animate-slide-up,
+	.animate-slide-down,
+	.animate-scale-in,
+	.animate-highlight-pulse,
+	.animate-check-pop,
+	.animate-token-update {
+		animation: none !important;
+	}
+
+	.transition-all,
+	.transition-colors,
+	.transition-opacity,
+	.transition-transform {
+		transition: none !important;
+	}
+
+	.progress-bar-animated {
+		animation: none !important;
 	}
 }
