@@ -8,21 +8,48 @@
  * @module
  */
 
+import type * as achievements from "../achievements.js";
 import type * as agent from "../agent.js";
+import type * as agentExecution from "../agentExecution.js";
+import type * as agentHooks from "../agentHooks.js";
+import type * as agentImportExport from "../agentImportExport.js";
+import type * as agentLibrary from "../agentLibrary.js";
+import type * as agentMessages from "../agentMessages.js";
 import type * as agentRuns from "../agentRuns.js";
 import type * as agents from "../agents.js";
+import type * as analytics from "../analytics.js";
 import type * as auth from "../auth.js";
 import type * as chat from "../chat.js";
+import type * as checkpointTree from "../checkpointTree.js";
+import type * as checkpointTriggers from "../checkpointTriggers.js";
 import type * as checkpoints from "../checkpoints.js";
+import type * as conductorProfiles from "../conductorProfiles.js";
+import type * as conversationBranching from "../conversationBranching.js";
+import type * as conversationQueue from "../conversationQueue.js";
+import type * as conversationSearch from "../conversationSearch.js";
 import type * as conversations from "../conversations.js";
+import type * as crons from "../crons.js";
+import type * as export_ from "../export.js";
+import type * as fileDiff from "../fileDiff.js";
 import type * as fileSnapshots from "../fileSnapshots.js";
+import type * as gitWorktrees from "../gitWorktrees.js";
+import type * as groupChats from "../groupChats.js";
 import type * as healthCheck from "../healthCheck.js";
 import type * as http from "../http.js";
 import type * as mcpServers from "../mcpServers.js";
 import type * as messagesStore from "../messagesStore.js";
+import type * as multiAgentCoordinator from "../multiAgentCoordinator.js";
+import type * as notifications from "../notifications.js";
+import type * as observabilityEvents from "../observabilityEvents.js";
+import type * as playbookExecution from "../playbookExecution.js";
+import type * as playbooks from "../playbooks.js";
 import type * as privateData from "../privateData.js";
 import type * as projects from "../projects.js";
+import type * as roadmapPhases from "../roadmapPhases.js";
+import type * as slashCommands from "../slashCommands.js";
+import type * as tasks from "../tasks.js";
 import type * as todos from "../todos.js";
+import type * as usageStats from "../usageStats.js";
 
 import type {
   ApiFromModules,
@@ -31,21 +58,48 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  achievements: typeof achievements;
   agent: typeof agent;
+  agentExecution: typeof agentExecution;
+  agentHooks: typeof agentHooks;
+  agentImportExport: typeof agentImportExport;
+  agentLibrary: typeof agentLibrary;
+  agentMessages: typeof agentMessages;
   agentRuns: typeof agentRuns;
   agents: typeof agents;
+  analytics: typeof analytics;
   auth: typeof auth;
   chat: typeof chat;
+  checkpointTree: typeof checkpointTree;
+  checkpointTriggers: typeof checkpointTriggers;
   checkpoints: typeof checkpoints;
+  conductorProfiles: typeof conductorProfiles;
+  conversationBranching: typeof conversationBranching;
+  conversationQueue: typeof conversationQueue;
+  conversationSearch: typeof conversationSearch;
   conversations: typeof conversations;
+  crons: typeof crons;
+  export: typeof export_;
+  fileDiff: typeof fileDiff;
   fileSnapshots: typeof fileSnapshots;
+  gitWorktrees: typeof gitWorktrees;
+  groupChats: typeof groupChats;
   healthCheck: typeof healthCheck;
   http: typeof http;
   mcpServers: typeof mcpServers;
   messagesStore: typeof messagesStore;
+  multiAgentCoordinator: typeof multiAgentCoordinator;
+  notifications: typeof notifications;
+  observabilityEvents: typeof observabilityEvents;
+  playbookExecution: typeof playbookExecution;
+  playbooks: typeof playbooks;
   privateData: typeof privateData;
   projects: typeof projects;
+  roadmapPhases: typeof roadmapPhases;
+  slashCommands: typeof slashCommands;
+  tasks: typeof tasks;
   todos: typeof todos;
+  usageStats: typeof usageStats;
 }>;
 
 /**

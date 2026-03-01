@@ -2,69 +2,119 @@
 
 import { api } from "@alias-mosaic-fullstack/backend/convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
+import { FolderOpen, Plus } from "lucide-react";
 import { useState } from "react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export default function ProjectsPage() {
-  const projects = useQuery(api.projects.list);
-  const createProject = useMutation(api.projects.create);
-  const removeProject = useMutation(api.projects.remove);
+	const projects = useQuery(api.projects.list);
+	const createProject = useMutation(api.projects.create);
+	const [name, setName] = useState("");
+	const [path, setPath] = useState("");
+	const [open, setOpen] = useState(false);
 
-  const [name, setName] = useState("");
-  const [path, setPath] = useState("");
+	const handleCreate = async (e: React.FormEvent) => {
+		e.preventDefault();
+		if (!(name.trim() && path.trim())) {
+			return;
+		}
+		await createProject({ name: name.trim(), path: path.trim() });
+		setName("");
+		setPath("");
+		setOpen(false);
+	};
 
-  const onCreate = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const trimmedName = name.trim();
-    const trimmedPath = path.trim();
-    if (!trimmedName || !trimmedPath) {
-      return;
-    }
-    await createProject({ name: trimmedName, path: trimmedPath });
-    setName("");
-    setPath("");
-  };
-
-  return (
-    <div className="mx-auto w-full max-w-3xl py-8 space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Projects</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form className="grid gap-2 md:grid-cols-[1fr_1fr_auto]" onSubmit={onCreate}>
-            <Input placeholder="Project name" value={name} onChange={(e) => setName(e.target.value)} />
-            <Input placeholder="/absolute/path" value={path} onChange={(e) => setPath(e.target.value)} />
-            <Button type="submit" disabled={!name.trim() || !path.trim()}>
-              Add
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Saved</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {!projects ? <p>Loading...</p> : null}
-          {projects?.length === 0 ? <p>No projects yet.</p> : null}
-          {projects?.map((project) => (
-            <div key={project._id} className="flex items-center justify-between rounded border p-2 gap-2">
-              <div>
-                <p className="font-medium">{project.name}</p>
-                <p className="text-sm text-muted-foreground">{project.path}</p>
-              </div>
-              <Button variant="outline" onClick={() => removeProject({ projectId: project._id })}>
-                Delete
-              </Button>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-    </div>
-  );
+	return (
+		<div className="flex flex-col">
+			<header className="flex h-14 items-center gap-4 border-b px-6">
+				<SidebarTrigger />
+				<h1 className="font-semibold text-lg">Projects</h1>
+				<div className="ml-auto">
+					<Dialog onOpenChange={setOpen} open={open}>
+						<DialogTrigger render={<Button size="sm" />}>
+							<Plus className="mr-2 h-4 w-4" />
+							New Project
+						</DialogTrigger>
+						<DialogContent>
+							<DialogHeader>
+								<DialogTitle>Create Project</DialogTitle>
+							</DialogHeader>
+							<form className="space-y-4" onSubmit={handleCreate}>
+								<div className="space-y-2">
+									<Label htmlFor="name">Name</Label>
+									<Input
+										id="name"
+										onChange={(e) => setName(e.target.value)}
+										placeholder="My Project"
+										value={name}
+									/>
+								</div>
+								<div className="space-y-2">
+									<Label htmlFor="path">Path</Label>
+									<Input
+										id="path"
+										onChange={(e) => setPath(e.target.value)}
+										placeholder="/path/to/project"
+										value={path}
+									/>
+								</div>
+								<Button className="w-full" type="submit">
+									Create
+								</Button>
+							</form>
+						</DialogContent>
+					</Dialog>
+				</div>
+			</header>
+			<div className="flex-1 p-6">
+				{!projects || projects.length === 0 ? (
+					<div className="flex flex-col items-center justify-center py-12">
+						<FolderOpen className="mb-4 h-12 w-12 text-muted-foreground" />
+						<p className="text-muted-foreground">
+							No projects yet. Create one to get started.
+						</p>
+					</div>
+				) : (
+					<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+						{projects.map((project) => (
+							<Card key={project._id}>
+								<CardHeader>
+									<CardTitle className="flex items-center gap-2">
+										<FolderOpen className="h-4 w-4" />
+										{project.name}
+									</CardTitle>
+								</CardHeader>
+								<CardContent>
+									<p className="mb-2 text-muted-foreground text-sm">
+										{project.path}
+									</p>
+									<div className="flex gap-2">
+										{project.gitBranch && (
+											<Badge variant="secondary">{project.gitBranch}</Badge>
+										)}
+										{project.worktreeEnabled && (
+											<Badge variant="outline">Worktree</Badge>
+										)}
+									</div>
+								</CardContent>
+							</Card>
+						))}
+					</div>
+				)}
+			</div>
+		</div>
+	);
 }

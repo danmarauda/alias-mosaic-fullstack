@@ -2,87 +2,84 @@
 
 import { api } from "@alias-mosaic-fullstack/backend/convex/_generated/api";
 import type { Id } from "@alias-mosaic-fullstack/backend/convex/_generated/dataModel";
-import { useMutation, useQuery } from "convex/react";
-import { useMemo, useState } from "react";
+import { useQuery } from "convex/react";
+import { FileText, MessageSquare } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export default function ConversationsPage() {
-  const projects = useQuery(api.projects.list);
-  const createConversation = useMutation(api.conversations.create);
+	const projects = useQuery(api.projects.list);
+	const [selectedProjectId, setSelectedProjectId] =
+		useState<Id<"projects"> | null>(null);
 
-  const firstProjectId = useMemo(() => projects?.[0]?._id ?? null, [projects]);
-  const [selectedProjectId, setSelectedProjectId] = useState<Id<"projects"> | null>(null);
-  const [name, setName] = useState("");
-  const activeProjectId = selectedProjectId ?? firstProjectId;
-  const conversations = useQuery(
-    api.conversations.listByProject,
-    activeProjectId ? { projectId: activeProjectId } : "skip",
-  );
+	const activeProjectId = selectedProjectId ?? projects?.[0]?._id ?? null;
+	const conversations = useQuery(
+		api.conversations.listByProject,
+		activeProjectId ? { projectId: activeProjectId } : "skip"
+	);
 
-  const onCreate = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!activeProjectId) {
-      return;
-    }
-    await createConversation({ projectId: activeProjectId, name: name.trim() || undefined });
-    setName("");
-  };
+	return (
+		<div className="flex flex-col">
+			<header className="flex h-14 items-center gap-4 border-b px-6">
+				<SidebarTrigger />
+				<h1 className="font-semibold text-lg">Conversations</h1>
+			</header>
+			<div className="flex-1 p-6">
+				<div className="mb-4 flex flex-wrap gap-2">
+					{projects?.map((project) => (
+						<Button
+							key={project._id}
+							onClick={() => setSelectedProjectId(project._id)}
+							size="sm"
+							variant={activeProjectId === project._id ? "default" : "outline"}
+						>
+							{project.name}
+						</Button>
+					))}
+				</div>
 
-  return (
-    <div className="mx-auto w-full max-w-3xl py-8 space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Conversations</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex gap-2 flex-wrap">
-            {projects?.map((project) => {
-              const isActive = (selectedProjectId ?? firstProjectId) === project._id;
-              return (
-                <Button
-                  key={project._id}
-                  variant={isActive ? "default" : "outline"}
-                  onClick={() => setSelectedProjectId(project._id)}
-                >
-                  {project.name}
-                </Button>
-              );
-            })}
-          </div>
-
-          <form onSubmit={onCreate} className="grid gap-2 md:grid-cols-[1fr_auto]">
-            <Input
-              placeholder="Conversation name (optional)"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-            <Button type="submit" disabled={!activeProjectId}>
-              Create
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Project Conversations</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {!projects ? <p>Loading projects...</p> : null}
-          {projects && projects.length === 0 ? <p>Create a project first.</p> : null}
-          {activeProjectId && !conversations ? <p>Loading conversations...</p> : null}
-          {conversations?.length === 0 ? <p>No conversations yet.</p> : null}
-          {conversations?.map((conversation) => (
-            <div key={conversation._id} className="rounded border p-2">
-              <p className="font-medium">{conversation.name ?? "Untitled"}</p>
-              <p className="text-sm text-muted-foreground">{conversation.projectPath}</p>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-    </div>
-  );
+				{!conversations || conversations.length === 0 ? (
+					<div className="flex flex-col items-center justify-center py-12">
+						<FileText className="mb-4 h-12 w-12 text-muted-foreground" />
+						<p className="text-muted-foreground">No conversations yet.</p>
+						<Button className="mt-4" render={<Link href="/ai" />} size="sm">
+							<MessageSquare className="mr-2 h-4 w-4" />
+							Start a Chat
+						</Button>
+					</div>
+				) : (
+					<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+						{conversations.map((conv) => (
+							<Card key={conv._id}>
+								<CardHeader>
+									<CardTitle className="text-base">
+										{conv.name ?? "Untitled Conversation"}
+									</CardTitle>
+								</CardHeader>
+								<CardContent>
+									{conv.firstMessage && (
+										<p className="mb-2 line-clamp-2 text-muted-foreground text-sm">
+											{conv.firstMessage}
+										</p>
+									)}
+									<div className="flex items-center gap-2">
+										<Badge variant="secondary">
+											{conv.aiTabs.length} tab
+											{conv.aiTabs.length !== 1 ? "s" : ""}
+										</Badge>
+										<Badge variant="outline">{conv.checkpointStrategy}</Badge>
+									</div>
+								</CardContent>
+							</Card>
+						))}
+					</div>
+				)}
+			</div>
+		</div>
+	);
 }

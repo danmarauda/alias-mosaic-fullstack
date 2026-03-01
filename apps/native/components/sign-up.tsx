@@ -1,86 +1,85 @@
-import { Button, ErrorView, Spinner, Surface, TextField } from "heroui-native";
+import { Button, Input, Spinner, Surface, TextField } from "heroui-native";
 import { useState } from "react";
 import { Text, View } from "react-native";
 
 import { authClient } from "@/lib/auth-client";
 
 export function SignUp() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+	const [name, setName] = useState("");
+	const [email, setEmail] = useState("");
+	const [password, setPassword] = useState("");
+	const [isLoading, setIsLoading] = useState(false);
+	const [error, setError] = useState<string | null>(null);
 
-  const handleSignUp = async () => {
-    setIsLoading(true);
-    setError(null);
+	const handleSignUp = async () => {
+		setIsLoading(true);
+		setError(null);
 
-    await authClient.signUp.email(
-      {
-        name,
-        email,
-        password,
-      },
-      {
-        onError: (error) => {
-          setError(error.error?.message || "Failed to sign up");
-          setIsLoading(false);
-        },
-        onSuccess: () => {
-          setName("");
-          setEmail("");
-          setPassword("");
-        },
-        onFinished: () => {
-          setIsLoading(false);
-        },
-      },
-    );
-  };
+		await authClient.signUp.email(
+			{
+				name,
+				email,
+				password,
+			},
+			{
+				onError: (error) => {
+					setError(error.error?.message || "Failed to sign up");
+					setIsLoading(false);
+				},
+				onSuccess: () => {
+					setName("");
+					setEmail("");
+					setPassword("");
+				},
+				onFinished: () => {
+					setIsLoading(false);
+				},
+			}
+		);
+	};
 
-  return (
-    <Surface variant="secondary" className="p-4 rounded-lg">
-      <Text className="text-foreground font-medium mb-4">Create Account</Text>
+	return (
+		<Surface className="rounded-lg p-4" variant="secondary">
+			<Text className="mb-4 font-medium text-foreground">Create Account</Text>
 
-      <ErrorView isInvalid={!!error} className="mb-3">
-        {error}
-      </ErrorView>
+			{error && (
+				<View className="mb-3 rounded bg-danger/10 p-2">
+					<Text className="text-danger text-sm">{error}</Text>
+				</View>
+			)}
 
-      <View className="gap-3">
-        <TextField>
-          <TextField.Label>Name</TextField.Label>
-          <TextField.Input value={name} onChangeText={setName} placeholder="John Doe" />
-        </TextField>
+			<View className="gap-3">
+				<TextField>
+					<Input onChangeText={setName} placeholder="Name" value={name} />
+				</TextField>
 
-        <TextField>
-          <TextField.Label>Email</TextField.Label>
-          <TextField.Input
-            value={email}
-            onChangeText={setEmail}
-            placeholder="email@example.com"
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-        </TextField>
+				<TextField>
+					<Input
+						autoCapitalize="none"
+						keyboardType="email-address"
+						onChangeText={setEmail}
+						placeholder="email@example.com"
+						value={email}
+					/>
+				</TextField>
 
-        <TextField>
-          <TextField.Label>Password</TextField.Label>
-          <TextField.Input
-            value={password}
-            onChangeText={setPassword}
-            placeholder="••••••••"
-            secureTextEntry
-          />
-        </TextField>
+				<TextField>
+					<Input
+						onChangeText={setPassword}
+						placeholder="Password"
+						secureTextEntry
+						value={password}
+					/>
+				</TextField>
 
-        <Button onPress={handleSignUp} isDisabled={isLoading} className="mt-1">
-          {isLoading ? (
-            <Spinner size="sm" color="default" />
-          ) : (
-            <Button.Label>Create Account</Button.Label>
-          )}
-        </Button>
-      </View>
-    </Surface>
-  );
+				<Button className="mt-1" isDisabled={isLoading} onPress={handleSignUp}>
+					{isLoading ? (
+						<Spinner color="default" size="sm" />
+					) : (
+						<Button.Label>Create Account</Button.Label>
+					)}
+				</Button>
+			</View>
+		</Surface>
+	);
 }

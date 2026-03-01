@@ -2,123 +2,91 @@
 
 import { api } from "@alias-mosaic-fullstack/backend/convex/_generated/api";
 import type { Id } from "@alias-mosaic-fullstack/backend/convex/_generated/dataModel";
-import { useMutation, useQuery } from "convex/react";
-import { useMemo, useState } from "react";
+import { useQuery } from "convex/react";
+import { GitBranch, Timer } from "lucide-react";
+import { useState } from "react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export default function CheckpointsPage() {
-  const projects = useQuery(api.projects.list);
-  const firstProjectId = useMemo(() => projects?.[0]?._id ?? null, [projects]);
-  const [selectedProjectId, setSelectedProjectId] = useState<Id<"projects"> | null>(null);
-  const activeProjectId = selectedProjectId ?? firstProjectId;
+	const projects = useQuery(api.projects.list);
+	const [selectedProjectId, setSelectedProjectId] =
+		useState<Id<"projects"> | null>(null);
 
-  const conversations = useQuery(
-    api.conversations.listByProject,
-    activeProjectId ? { projectId: activeProjectId } : "skip",
-  );
-  const firstConversationId = useMemo(() => conversations?.[0]?._id ?? null, [conversations]);
-  const [selectedConversationId, setSelectedConversationId] = useState<Id<"conversations"> | null>(null);
-  const activeConversationId = selectedConversationId ?? firstConversationId;
+	const activeProjectId = selectedProjectId ?? projects?.[0]?._id ?? null;
+	const conversations = useQuery(
+		api.conversations.listByProject,
+		activeProjectId ? { projectId: activeProjectId } : "skip"
+	);
 
-  const checkpoints = useQuery(
-    api.checkpoints.listByConversation,
-    activeConversationId ? { conversationId: activeConversationId } : "skip",
-  );
-  const createCheckpoint = useMutation(api.checkpoints.create);
+	const firstConvId = conversations?.[0]?._id ?? null;
+	const checkpoints = useQuery(
+		api.checkpoints.listByConversation,
+		firstConvId ? { conversationId: firstConvId } : "skip"
+	);
 
-  const [description, setDescription] = useState("");
-  const [messageIndex, setMessageIndex] = useState("0");
+	return (
+		<div className="flex flex-col">
+			<header className="flex h-14 items-center gap-4 border-b px-6">
+				<SidebarTrigger />
+				<h1 className="font-semibold text-lg">Checkpoints</h1>
+			</header>
+			<div className="flex-1 p-6">
+				<div className="mb-4 flex flex-wrap gap-2">
+					{projects?.map((project) => (
+						<Button
+							key={project._id}
+							onClick={() => setSelectedProjectId(project._id)}
+							size="sm"
+							variant={activeProjectId === project._id ? "default" : "outline"}
+						>
+							{project.name}
+						</Button>
+					))}
+				</div>
 
-  const onCreate = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!activeProjectId || !activeConversationId) {
-      return;
-    }
-    await createCheckpoint({
-      projectId: activeProjectId,
-      conversationId: activeConversationId,
-      messageIndex: Number.parseInt(messageIndex, 10) || 0,
-      description: description.trim() || undefined,
-      trigger: "manual",
-      toolsUsed: [],
-      filesModified: [],
-    });
-    setDescription("");
-  };
-
-  return (
-    <div className="mx-auto w-full max-w-3xl py-8 space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Checkpoints</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex gap-2 flex-wrap">
-            {projects?.map((project) => {
-              const isActive = (selectedProjectId ?? firstProjectId) === project._id;
-              return (
-                <Button
-                  key={project._id}
-                  variant={isActive ? "default" : "outline"}
-                  onClick={() => {
-                    setSelectedProjectId(project._id);
-                    setSelectedConversationId(null);
-                  }}
-                >
-                  {project.name}
-                </Button>
-              );
-            })}
-          </div>
-
-          <div className="flex gap-2 flex-wrap">
-            {conversations?.map((conversation) => {
-              const isActive = (selectedConversationId ?? firstConversationId) === conversation._id;
-              return (
-                <Button
-                  key={conversation._id}
-                  variant={isActive ? "default" : "outline"}
-                  onClick={() => setSelectedConversationId(conversation._id)}
-                >
-                  {conversation.name ?? "Untitled"}
-                </Button>
-              );
-            })}
-          </div>
-
-          <form onSubmit={onCreate} className="grid gap-2 md:grid-cols-[120px_1fr_auto]">
-            <Input value={messageIndex} onChange={(e) => setMessageIndex(e.target.value)} placeholder="Index" />
-            <Input
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Description"
-            />
-            <Button type="submit" disabled={!activeProjectId || !activeConversationId}>
-              Create
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Timeline</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {checkpoints?.length === 0 ? <p>No checkpoints yet.</p> : null}
-          {checkpoints?.map((checkpoint) => (
-            <div key={checkpoint._id} className="rounded border p-2">
-              <p className="font-medium">{checkpoint.description ?? "Manual checkpoint"}</p>
-              <p className="text-sm text-muted-foreground">
-                Message #{checkpoint.messageIndex} - {new Date(checkpoint.createdAt).toLocaleString()}
-              </p>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-    </div>
-  );
+				{!checkpoints || checkpoints.length === 0 ? (
+					<div className="flex flex-col items-center justify-center py-12">
+						<Timer className="mb-4 h-12 w-12 text-muted-foreground" />
+						<p className="text-muted-foreground">No checkpoints yet.</p>
+					</div>
+				) : (
+					<div className="space-y-4">
+						{checkpoints.map((cp) => (
+							<Card key={cp._id}>
+								<CardHeader className="flex flex-row items-center gap-4">
+									<div className="flex h-10 w-10 items-center justify-center rounded-full border">
+										<GitBranch className="h-5 w-5" />
+									</div>
+									<div className="flex-1">
+										<CardTitle className="text-base">
+											{cp.description ?? `Checkpoint #${cp.messageIndex}`}
+										</CardTitle>
+										<p className="text-muted-foreground text-sm">
+											{new Date(cp.timestamp).toLocaleString()}
+										</p>
+									</div>
+									<Badge>{cp.metadata?.trigger ?? "manual"}</Badge>
+								</CardHeader>
+								{cp.metadata && (
+									<CardContent>
+										<div className="flex flex-wrap gap-1.5">
+											{cp.metadata.filesModified.map((file) => (
+												<Badge key={file} variant="outline">
+													{file}
+												</Badge>
+											))}
+										</div>
+									</CardContent>
+								)}
+							</Card>
+						))}
+					</div>
+				)}
+			</div>
+		</div>
+	);
 }

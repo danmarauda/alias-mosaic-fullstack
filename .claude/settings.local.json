@@ -1,0 +1,21 @@
+{
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "convex",
+    "shadcn-studio-mcp",
+    "heroui-react",
+    "heroui-native",
+    "mastra",
+    "morph-mcp",
+    "github",
+    "exa",
+    "sequential-thinking",
+    "framer",
+    "Resend",
+    "claude-flow",
+    "context7",
+    "shadcn",
+    "better-auth",
+    "next-devtools"
+  ]
+}

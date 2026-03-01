@@ -14,36 +14,45 @@
 6. [Platform-Specific Implementation](#platform-specific-implementation)
 7. [Real-Time Updates](#real-time-updates)
 8. [Notification System](#notification-system)
-9. [Development Phases](#development-phases)
-10. [Migration Strategy](#migration-strategy)
+9. [Reference Repos & Feature Sources](#reference-repos--feature-sources)
+10. [Development Phases](#development-phases)
+11. [New Schema Additions](#new-schema-additions)
+12. [Migration Strategy](#migration-strategy)
 
 ---
 
 ## Overview
 
-ALIAS-MOSAIC is a unified multi-platform AI orchestration system combining the best features from:
+ALIAS-MOSAIC is a unified multi-platform AI orchestration system combining the best features from three reference applications:
 
-- **Auto-claude (Claudia)**: Desktop GUI for Claude Code with custom agents, MCP management, timelines
-- **Maestro**: Workflow automation, multi-agent coordination (Group Chat), Git worktrees, playbooks
+- **Claudia** (v latest, `feature/multi-agent-observability`): Desktop GUI for Claude Code — custom agents, MCP management, timeline/checkpoints, **multi-agent observability dashboard** with Warp HTTP + WebSocket event streaming
+- **Maestro** (v0.15.0): Workflow automation — multi-agent coordination (Group Chat), Git worktrees, Auto Run playbooks, **Symphony OSS contribution platform**, **Director's Notes**, mobile remote control, CLI interface, Playbook Exchange, custom slash commands with template variables
+- **Auto-Claude** (v2.7.6): Autonomous multi-agent pipeline — Spec→Plan→Code→QA pipeline, **Kanban board**, **AI roadmap/ideation**, parallel agent terminals (up to 12), Opus 4.6 adaptive thinking, semantic merge, Graphiti memory system, multi-profile auth, PR review orchestration
 
 ### Core Principles
 
 1. **Single Source of Truth**: Convex backend for all data persistence
 2. **Full Feature Parity**: Desktop (Tauri), Web (Next.js), Mobile (Expo) with identical capabilities
-3. **Real-Time Sync**: Changes propagate instantly across all platforms
+3. **Real-Time Sync**: Changes propagate instantly across all platforms via Convex subscriptions
 4. **Unified Notifications**: Novu inbox for all system events
+5. **Agent-First Design**: Everything revolves around creating, executing, and monitoring AI agents
+6. **Keyboard-First UX**: Quick actions palette, customizable shortcuts, power-user workflows
 
 ### System Goals
 
-| Goal | Description |
-|------|-------------|
-| **Agent Management** | Create, execute, and monitor custom AI agents |
-| **Workflow Automation** | Batch processing with Auto Run playbooks |
-| **Multi-Agent Coordination** | Group Chat with moderator pattern |
-| **Timeline Versioning** | Checkpoints for conversation history |
-| **MCP Integration** | Unified server management across platforms |
-| **Usage Analytics** | Track costs, tokens, and performance |
-| **Git Integration** | Worktree isolation for parallel development |
+| Goal | Description | Source |
+|------|-------------|--------|
+| **Agent Management** | Create, execute, and monitor custom AI agents with hooks | Claudia + Auto-Claude |
+| **Workflow Automation** | Batch processing with Auto Run playbooks and template vars | Maestro |
+| **Multi-Agent Coordination** | Group Chat with moderator + parallel agent execution | Maestro + Auto-Claude |
+| **Timeline Versioning** | Checkpoints with branching tree for conversation history | Claudia |
+| **Observability** | Real-time event streaming, activity pulse, session scoring | Claudia |
+| **Task Management** | Kanban board with drag-reorder and AI-assisted planning | Auto-Claude |
+| **MCP Integration** | Unified server management with import/export | Claudia |
+| **Usage Analytics** | Token/cost tracking, heatmaps, agent comparison, CSV export | All three |
+| **Git Integration** | Worktree isolation, branch management, PR creation | Maestro + Auto-Claude |
+| **AI Pipeline** | Spec creation → planning → coding → QA review loop | Auto-Claude |
+| **Mobile Remote** | Monitor/control agents from phone with push notifications | Maestro + Expo |
 
 ---
 
@@ -927,37 +936,271 @@ export const notify = mutation({
 
 ---
 
+## Reference Repos & Feature Sources
+
+This project synthesizes features from three reference repositories:
+
+| Repo | Location | Branch | Description |
+|------|----------|--------|-------------|
+| **Claudia** | `~/Documents/GitHub/claudia/` | `feature/multi-agent-observability` | Desktop GUI for Claude Code (Tauri 2 + React 18) |
+| **Maestro** | `~/Documents/GitHub/Maestro/` | `main` (v0.15.0) | Workflow automation & multi-agent coordination (Electron + React) |
+| **Auto-Claude** | `~/Auto-Claude/` | `develop` (v2.7.6) | Autonomous multi-agent pipeline (Electron + React 19 + Python backend) |
+
+### Feature Matrix — What Comes From Where
+
+| Feature | Claudia | Maestro | Auto-Claude | MOSAIC Target |
+|---------|---------|---------|-------------|---------------|
+| Agent CRUD & Execution | SQLite + Rust IPC | File JSON + IPC | Python agents + SDK | Convex |
+| Session Management | SQLite sessions | File-based sessions | PTY sessions | Convex real-time |
+| Timeline/Checkpoints | Git-based checkpoints | - | Git worktree isolation | Convex + branching |
+| Multi-Agent Observability | Warp HTTP + WebSocket | Director's Notes | Parallel agent terminals | Convex subscriptions |
+| Usage Analytics | Rust JSONL parser | Activity heatmaps + CSV export | Token tracking per phase | Convex aggregation |
+| MCP Server Management | Import/export + status | MCP documentation server | - | Convex + platform APIs |
+| Auto Run / Playbooks | - | Markdown-based + Playbook Exchange | Spec→Plan→Code→QA pipeline | Convex + scheduled |
+| Group Chat | - | Moderator-orchestrated | PR review multi-agent | Convex real-time |
+| Git Worktrees | - | Parallel worktree agents | Isolated worktrees per build | Convex tracking |
+| Kanban / Task Board | - | - | Drag-reorder Kanban | Convex todos |
+| Roadmap / Ideation | - | - | AI-assisted roadmap + ideation | Convex + AI SDK |
+| Agent Import/Export | `.claudia.json` + GitHub | - | - | Convex + file export |
+| Mobile Remote Control | - | QR code + web server + Cloudflare tunnel | - | Expo native |
+| CLI Interface | - | `maestro-cli` (Node.js) | Python CLI (`spec`, `build`, `qa`) | - |
+| Insights Chat | - | - | Real-time streaming AI chat | AI SDK + Convex |
+| Security Scanning | Pre-built SAST agent | - | OS sandbox + filesystem restrictions | Convex actions |
+| Keyboard-First Design | - | `Cmd+K` quick actions | `Ctrl+K` expand/collapse | Both web + native |
+| Conductor Profile | - | "About Me" injected into agents | - | User settings |
+| Custom Slash Commands | - | Template variables + autocomplete | - | Convex + UI |
+| Document Graph | - | Knowledge graph + wiki-links | - | Future |
+| Symphony (OSS Contrib) | - | Single-click OSS contribution platform | - | Future |
+| Semantic Merge | - | - | AI-powered conflict resolution | Future |
+| Memory System | - | - | Graphiti/LadybugDB graph memory | Future |
+
+---
+
 ## Development Phases
 
 ### Phase 1: Foundation (Weeks 1-2)
-- [ ] Set up Convex schema
-- [ ] Create shared types package
-- [ ] Implement basic queries/mutations
+- [ ] Set up Convex schema (all tables from Data Models section)
+- [ ] Create shared types package with Zod validators
+- [ ] Implement basic queries/mutations for all core tables
 - [ ] Set up authentication with Better Auth
+- [ ] Configure Turborepo pipeline (dev, build, typecheck, lint)
+- [ ] Environment variables package (`packages/env`)
+- [ ] Convex deployment and development workflow
 
-### Phase 2: Core Features (Weeks 3-4)
-- [ ] Agent CRUD operations
-- [ ] Conversation management
-- [ ] Message streaming
-- [ ] Basic UI components
+### Phase 2: Agent System (Weeks 3-4)
+*Sources: Claudia agent CRUD, Auto-Claude agent pipeline, Maestro multi-agent*
+- [ ] Agent CRUD operations (create, read, update, delete)
+- [ ] Agent execution engine (Convex actions → Claude Code CLI)
+- [ ] Agent run tracking with real-time status updates
+- [ ] Agent permission model (file read/write, network access)
+- [ ] Agent hooks configuration (JSON-based lifecycle hooks)
+- [ ] Pre-built agent library (Git Commit Bot, Security Scanner, Unit Tests Bot)
+- [ ] Agent import/export (`.claudia.json` format compatibility)
+- [ ] Agent model selection (Opus 4.6, Sonnet 4.6, Haiku 4.5)
 
-### Phase 3: Advanced Features (Weeks 5-6)
-- [ ] Timeline/checkpoint system
-- [ ] MCP server management
-- [ ] Usage analytics
-- [ ] Novu notifications
+### Phase 3: Conversation & Session Management (Weeks 5-6)
+*Sources: Claudia sessions, Maestro session pool, Auto-Claude terminals*
+- [ ] Conversation management with project context
+- [ ] Message streaming with real-time Convex subscriptions
+- [ ] Multi-tab AI sessions (from Maestro dual-mode)
+- [ ] Session resume and history browsing
+- [ ] Session search (fuzzy search across projects)
+- [ ] Execution queue for batch message processing
+- [ ] File preview tabs within conversations
+- [ ] Conductor profile — user "About Me" injected into agent prompts
 
-### Phase 4: Platform Polish (Weeks 7-8)
-- [ ] Tauri desktop app
-- [ ] Expo mobile app
-- [ ] Responsive web design
-- [ ] Cross-platform testing
+### Phase 4: Timeline & Checkpoints (Weeks 7-8)
+*Sources: Claudia timeline navigator, Auto-Claude git isolation*
+- [ ] Timeline/checkpoint creation (manual + auto strategies)
+- [ ] Checkpoint tree with branching (parent-child relationships)
+- [ ] File snapshot storage with SHA-256 deduplication
+- [ ] Fork conversation from any checkpoint
+- [ ] Restore/apply checkpoint state
+- [ ] Smart checkpoint triggers (per-prompt, per-tool-use, smart)
 
-### Phase 5: Maestro Features (Weeks 9-10)
-- [ ] Auto Run / Playbooks
-- [ ] Group Chat
-- [ ] Git worktree integration
-- [ ] Achievement system
+### Phase 5: Observability & Analytics (Weeks 9-10)
+*Sources: Claudia observability dashboard, Maestro usage analytics, Auto-Claude metrics*
+- [ ] Real-time event stream dashboard
+- [ ] Session performance tracking and scoring
+- [ ] Activity pulse visualization (time-windowed)
+- [ ] Usage analytics by model, project, and time period
+- [ ] Token/cost tracking with Claude 4 pricing
+- [ ] Activity heatmaps (GitHub-style)
+- [ ] Agent comparison charts
+- [ ] CSV export capability
+- [ ] Novu notification integration for key events
+
+### Phase 6: Auto Run & Playbooks (Weeks 11-12)
+*Sources: Maestro Auto Run system, Auto-Claude spec pipeline*
+- [ ] Auto Run with markdown document processing
+- [ ] Playbook CRUD (name, documents, loop config, custom prompts)
+- [ ] Playbook execution engine (sequential document processing)
+- [ ] Template variables in prompts (`{{AGENT_NAME}}`, `{{DOCUMENT_PATH}}`, etc.)
+- [ ] Custom slash commands with template substitution
+- [ ] Playbook import from community library
+- [ ] Local manifest support for private playbooks
+- [ ] Loop behavior (configurable max iterations, reset on completion)
+
+### Phase 7: Multi-Agent Coordination (Weeks 13-14)
+*Sources: Maestro Group Chat, Auto-Claude parallel agents, Claudia multi-agent*
+- [ ] Group Chat with moderator AI pattern
+- [ ] Participant management (add/remove agents)
+- [ ] Message routing — moderator delegates to specialists
+- [ ] Response synthesis — moderator summarizes multi-agent output
+- [ ] Parallel agent execution (up to 12 concurrent)
+- [ ] Task decomposition (plan → subtask → execute → review)
+- [ ] QA review loop (reviewer → fixer, max 3 iterations)
+
+### Phase 8: MCP & Integrations (Weeks 15-16)
+*Sources: Claudia MCP manager, Maestro MCP docs server*
+- [ ] MCP server CRUD (stdio, SSE, HTTP transports)
+- [ ] MCP server status monitoring (connecting, connected, error)
+- [ ] MCP import/export configuration
+- [ ] Scope management (local, project, user)
+- [ ] Claude Desktop config import
+- [ ] Git integration (repo detection, branch display, worktree operations)
+- [ ] Git worktree isolation for parallel development
+
+### Phase 9: Platform UIs (Weeks 17-20)
+*All three reference repos inform the UI/UX*
+- [ ] **Web (Next.js)**: Full dashboard with responsive design
+  - Agent management grid
+  - Conversation panel with message streaming
+  - Timeline navigator with branch visualization
+  - Usage analytics dashboards
+  - Settings and conductor profile
+- [ ] **Mobile (Expo)**: Native experience
+  - Agent list and execution
+  - Conversation view with pull-to-refresh
+  - Push notifications via Novu
+  - QR code pairing with desktop (from Maestro mobile remote)
+  - Checkpoint browsing
+- [ ] **Desktop (Tauri)**: Native OS integration (future)
+  - Direct Claude Code process spawning
+  - Native file system access
+  - System tray with agent status
+  - PTY terminal integration
+
+### Phase 10: Advanced Features (Weeks 21-24)
+*Sources: Auto-Claude Kanban/Roadmap/Ideation, Maestro Symphony/Director/Document Graph*
+- [ ] Kanban task board with drag-reorder
+- [ ] AI-assisted roadmap generation with phase planning
+- [ ] Ideation engine (discover improvements across 6 categories)
+- [ ] Insights chat — streaming AI for codebase exploration
+- [ ] Director's Notes — unified history timeline across all agents
+- [ ] Document graph visualization (knowledge graph of docs)
+- [ ] Achievement/gamification system (badge levels 1-15)
+- [ ] Keyboard-first design (`Cmd+K` quick actions)
+- [ ] Custom themes and appearance settings
+
+---
+
+## New Schema Additions
+
+Based on reference repo analysis, the following tables should be added to the Convex schema:
+
+```typescript
+// ============================================
+// KANBAN TASKS (from Auto-Claude)
+// ============================================
+tasks: defineTable({
+  projectId: v.id("projects"),
+  title: v.string(),
+  description: v.optional(v.string()),
+  status: v.string(), // "backlog" | "todo" | "in_progress" | "review" | "done"
+  priority: v.string(), // "low" | "medium" | "high" | "critical"
+  order: v.number(), // For drag-reorder within column
+  assignedAgentId: v.optional(v.id("agents")),
+  referenceImages: v.optional(v.array(v.string())), // Storage IDs
+  parentTaskId: v.optional(v.id("tasks")), // For subtasks
+  createdAt: v.number(),
+  updatedAt: v.number(),
+})
+  .index("by_project_status", ["projectId", "status"])
+  .index("by_parent", ["parentTaskId"]),
+
+// ============================================
+// ROADMAP (from Auto-Claude)
+// ============================================
+roadmapPhases: defineTable({
+  projectId: v.id("projects"),
+  name: v.string(),
+  description: v.optional(v.string()),
+  order: v.number(),
+  status: v.string(), // "planned" | "active" | "completed"
+  features: v.array(v.object({
+    id: v.string(),
+    title: v.string(),
+    description: v.optional(v.string()),
+    completed: v.boolean(),
+  })),
+  createdAt: v.number(),
+  updatedAt: v.number(),
+})
+  .index("by_project", ["projectId"]),
+
+// ============================================
+// OBSERVABILITY EVENTS (from Claudia)
+// ============================================
+observabilityEvents: defineTable({
+  sessionId: v.string(),
+  sourceApp: v.string(),
+  eventType: v.string(),
+  toolName: v.optional(v.string()),
+  payload: v.optional(v.any()),
+  summary: v.optional(v.string()),
+  timestamp: v.number(),
+})
+  .index("by_session", ["sessionId"])
+  .index("by_type", ["eventType"])
+  .index("by_timestamp", ["timestamp"]),
+
+// ============================================
+// SLASH COMMANDS (from Maestro)
+// ============================================
+slashCommands: defineTable({
+  name: v.string(), // e.g., "deploy", "review"
+  prompt: v.string(), // Template with {{VARIABLES}}
+  description: v.optional(v.string()),
+  projectId: v.optional(v.id("projects")), // null = global
+  createdAt: v.number(),
+  updatedAt: v.number(),
+})
+  .index("by_project", ["projectId"]),
+
+// ============================================
+// CONDUCTOR PROFILE (from Maestro)
+// ============================================
+conductorProfiles: defineTable({
+  userId: v.string(),
+  aboutMe: v.string(), // Injected into all agent prompts
+  preferences: v.optional(v.object({
+    defaultModel: v.optional(v.string()),
+    defaultTheme: v.optional(v.string()),
+    keyboardShortcuts: v.optional(v.record(v.string())),
+  })),
+  globalEnvVars: v.optional(v.record(v.string())),
+  updatedAt: v.number(),
+})
+  .index("by_user", ["userId"]),
+
+// ============================================
+// GIT WORKTREES (expanded from original)
+// ============================================
+gitWorktrees: defineTable({
+  projectId: v.id("projects"),
+  agentRunId: v.optional(v.id("agentRuns")),
+  branchName: v.string(),
+  worktreePath: v.string(),
+  baseBranch: v.string(),
+  status: v.string(), // "active" | "merged" | "abandoned" | "pr_created"
+  prUrl: v.optional(v.string()),
+  createdAt: v.number(),
+  cleanedUpAt: v.optional(v.number()),
+})
+  .index("by_project", ["projectId"])
+  .index("by_status", ["status"]),
+```
 
 ---
 
@@ -988,7 +1231,14 @@ pub async fn export_claudia_data(pool: &SqlitePool) -> MigrationData {
         .fetch_all(pool)
         .await?;
 
-    MigrationData { agents, sessions, checkpoints }
+    // NEW: Export observability events
+    let events = sqlx::query_as::<_, ObservabilityEvent>(
+        "SELECT * FROM observability_events ORDER BY timestamp"
+    )
+        .fetch_all(pool)
+        .await?;
+
+    MigrationData { agents, sessions, checkpoints, events }
 }
 ```
 
@@ -1008,7 +1258,11 @@ async function importData(data: MigrationData) {
       name: agent.name,
       icon: agent.icon,
       systemPrompt: agent.system_prompt,
-      // ... map other fields
+      model: agent.model,
+      enableFileRead: agent.enable_file_read,
+      enableFileWrite: agent.enable_file_write,
+      enableNetwork: agent.enable_network,
+      hooks: agent.hooks,
     });
   }
 
@@ -1025,7 +1279,7 @@ async function importData(data: MigrationData) {
 
 ### From Maestro (JSON to Convex)
 
-Maestro uses file-based JSON storage. Migration:
+Maestro v0.15.0 uses file-based JSON storage with session pool architecture:
 
 ```typescript
 // scripts/migrate-maestro.ts
@@ -1037,25 +1291,112 @@ const MAESTRO_DATA_PATH = process.env.MAESTRO_DATA_PATH
   ?? "~/Library/Application Support/maestro";
 
 async function migrateMaestroData() {
-  // Read sessions.json
+  // Read sessions
   const sessionsPath = path.join(MAESTRO_DATA_PATH, "maestro-sessions.json");
   const sessions = JSON.parse(await fs.readFile(sessionsPath, "utf-8"));
 
-  // Import to Convex
+  // Read playbooks
+  const playbooksPath = path.join(MAESTRO_DATA_PATH, "playbooks");
+  const playbooks = await discoverPlaybooks(playbooksPath);
+
+  // Read custom commands
+  const commandsPath = path.join(MAESTRO_DATA_PATH, "commands.json");
+  const commands = JSON.parse(await fs.readFile(commandsPath, "utf-8"));
+
+  // Import sessions to Convex
   for (const session of Object.values(sessions)) {
     await convex.mutation(api.migrations.importMaestroSession, {
       name: session.name,
       toolType: session.toolType,
       cwd: session.cwd,
       aiLogs: session.aiLogs,
-      // ... map other fields
     });
+  }
+
+  // Import playbooks
+  for (const playbook of playbooks) {
+    await convex.mutation(api.migrations.importPlaybook, {
+      name: playbook.title,
+      description: playbook.description,
+      documents: playbook.documents,
+      enableLoop: playbook.loopEnabled,
+      customPrompt: playbook.prompt ?? "",
+    });
+  }
+
+  // Import custom slash commands
+  for (const cmd of commands) {
+    await convex.mutation(api.migrations.importSlashCommand, {
+      name: cmd.trigger,
+      prompt: cmd.prompt,
+      description: cmd.description,
+    });
+  }
+}
+```
+
+### From Auto-Claude (Python Backend to Convex)
+
+Auto-Claude v2.7.6 uses a Python backend with Electron frontend:
+
+```typescript
+// scripts/migrate-auto-claude.ts
+
+import fs from "fs/promises";
+import path from "path";
+
+async function migrateAutoClaudeData() {
+  // Read task data from Auto-Claude's local storage
+  const tasksPath = path.join(
+    process.env.AUTO_CLAUDE_DATA ?? "~/Library/Application Support/auto-claude",
+    "tasks.json"
+  );
+  const tasks = JSON.parse(await fs.readFile(tasksPath, "utf-8"));
+
+  // Import Kanban tasks
+  for (const task of tasks) {
+    await convex.mutation(api.migrations.importTask, {
+      title: task.title,
+      description: task.description,
+      status: mapStatus(task.status),
+      priority: task.priority ?? "medium",
+    });
+  }
+
+  // Import roadmap phases
+  const roadmapPath = path.join(
+    process.env.AUTO_CLAUDE_DATA ?? "~/Library/Application Support/auto-claude",
+    "roadmap.json"
+  );
+  if (await fileExists(roadmapPath)) {
+    const phases = JSON.parse(await fs.readFile(roadmapPath, "utf-8"));
+    for (const phase of phases) {
+      await convex.mutation(api.migrations.importRoadmapPhase, {
+        name: phase.name,
+        description: phase.description,
+        features: phase.features,
+      });
+    }
   }
 }
 ```
 
 ---
 
-**Document Version:** 1.0
-**Last Updated:** 2025-02-07
+## Reference Repo Sync
+
+Keep reference repos up to date for ongoing feature alignment:
+
+```bash
+# Pull latest from all three reference repos
+cd ~/Documents/GitHub/claudia && git stash && git pull && git stash pop
+cd ~/Documents/GitHub/Maestro && git stash && git pull origin main && git stash pop
+cd ~/Auto-Claude && git stash && git pull origin develop && git stash pop
+```
+
+---
+
+**Document Version:** 2.0
+**Last Updated:** 2026-02-24
+**Reference Versions:** Claudia (multi-agent-observability), Maestro v0.15.0, Auto-Claude v2.7.6
 **Status:** Ready for Implementation
